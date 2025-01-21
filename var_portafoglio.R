@@ -1,6 +1,7 @@
-# Value at Risk. è una metrica per misurare l'incertezza di una portafoglio di valori.
+# Value at Risk.
+# è una misura del rischio di perdita di un investimento. Il var stima quanto un insieme di investimenti potrebbe perdere (con una certa probabilità).
 # misura la volatilità del portafoglio e quanto si stima di perdere valore in un dato intervallo temporale
-library(MASS)  # For multivariate normal distribution simulation
+library(MASS)
 library(tidyverse)
 df <- read.csv("C:/Users/utente/OneDrive/Documenti/Dati/sp500/SnP500 All assets.csv", header=TRUE)
 
@@ -14,8 +15,8 @@ closing_prices <- as.data.frame(lapply(closing_prices, as.numeric))
 
 # calcolo del logaritmo del rendimento giornaliero
 portfolio_returns <- closing_prices %>%
-  mutate_all(~ log(. / lag(.))) %>%  # Calculate log returns
-  na.omit()  # Remove rows with NA (first row will be NA after lag)
+  mutate_all(~ log(. / lag(.))) %>%
+  na.omit()
 
 #valore atteso
 expected_returns <- colMeans(portfolio_returns)
@@ -30,15 +31,15 @@ head(cov_matrix)
 n_assets <- ncol(portfolio_returns)
 portfolio_weights <- rep(1 / n_assets, n_assets)
 
-n_simulations <- 100000  # Number of Monte Carlo simulations
-portfolio_value <- 11e3  # Total portfolio value in dollars
-confidence_level <- 0.95 # Confidence level for VaR (95%)
+n_simulations <- 100000
+portfolio_value <- 11e3
+confidence_level <- 0.95
 
 # simulazione rendimenti
 simulated_returns <- mvrnorm(n_simulations, mu = expected_returns, Sigma = cov_matrix)
 head(simulated_returns)
 
-# Calculate portfolio returns for each simulation
+# Calcolo del rendimento del portafoglio per ciascuna simulazione
 portfolio_returns <- simulated_returns %*% portfolio_weights
 
 # Calcolo del value at risk del portafoglio
@@ -50,7 +51,7 @@ cat("VaR =", round(-VaR, 2), "USD\n")
 # istogramma dei rendimenti
 hist(portfolio_returns, breaks = 50, main = "Monte Carlo Simulation of Portfolio Returns",
      xlab = "Portfolio Returns", col = "lightblue", border = "darkblue")
-abline(v = VaR / portfolio_value, col = "red", lwd = 2, lty = 2)  # il Var
+abline(v = VaR / portfolio_value, col = "red", lwd = 2, lty = 2)
 legend("topright", legend = c("VaR"), col = c("red"), lty = c(2), lwd = c(2))
 
 VaR
